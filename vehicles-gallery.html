@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VELOCITY — Vehicle Gallery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f3ef;
+      --red: #c8392b;
+      --red-dark: #8e2219;
+      --gray: #1e1e1e;
+      --gray-mid: #2e2e2e;
+      --gray-light: #777;
+      --text-muted: #aaa;
+      --accent: #e8b84b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+      font-weight: 400;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #222;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 4px;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--red); }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--white); }
+
+    .nav-links a.active {
+      border-bottom: 2px solid var(--red);
+      padding-bottom: 2px;
+    }
+
+    /* HERO */
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 3rem 5rem;
+      position: relative;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1600&q=80') center/cover no-repeat;
+      opacity: 0.45;
+      transform: scale(1.05);
+      animation: slowZoom 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes slowZoom {
+      from { transform: scale(1.05); }
+      to   { transform: scale(1.12); }
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, #0a0a0a 18%, transparent 70%);
+    }
+
+    .hero-content { position: relative; z-index: 2; }
+
+    .hero-tag {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 9rem);
+      line-height: 0.92;
+      letter-spacing: 2px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--red);
+    }
+
+    .hero-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 460px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--red);
+      color: var(--white);
+      text-decoration: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 1rem 2rem;
+      transition: background 0.2s;
+    }
+
+    .hero-cta:hover { background: var(--red-dark); }
+    .hero-cta svg { width: 16px; height: 16px; }
+
+    /* FILTER TABS */
+    .filter-bar {
+      display: flex;
+      gap: 0;
+      padding: 0 3rem;
+      background: var(--gray);
+      border-bottom: 1px solid #333;
+      position: sticky;
+      top: 67px;
+      z-index: 50;
+    }
+
+    .filter-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gray-light);
+      padding: 1.1rem 1.8rem;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .filter-btn.active, .filter-btn:hover { color: var(--white); }
+
+    .filter-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--red);
+    }
+
+    /* COUNT BADGE */
+    .filter-btn .count {
+      display: inline-block;
+      background: var(--gray-mid);
+      border-radius: 999px;
+      font-size: 0.65rem;
+      padding: 1px 7px;
+      margin-left: 6px;
+      color: var(--text-muted);
+    }
+
+    .filter-btn.active .count {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    /* GALLERY SECTION */
+    .gallery-section {
+      padding: 4rem 3rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.4rem;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      letter-spacing: 2px;
+    }
+
+    .section-count {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--gray);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+
+    .card:hover .card-img {
+      transform: scale(1.06);
+    }
+
+    .card:hover .card-overlay {
+      opacity: 1;
+    }
+
+    .card-img-wrap {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16/10;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+      display: block;
+      background: #111;
+    }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(200,57,43,0.15);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card-cat-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--black);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      color: var(--text-muted);
+    }
+
+    .card-body {
+      padding: 1.2rem 1.4rem;
+      border-top: 1px solid #2a2a2a;
+    }
+
+    .card-make {
+      font-size: 0.72rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--red);
+      font-family: 'Barlow Condensed', sans-serif;
+      margin-bottom: 4px;
+    }
+
+    .card-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 0.4rem;
+    }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1.4rem;
+      border-top: 1px solid #2a2a2a;
+      font-family: 'Barlow Condensed', sans-serif;
+    }
+
+    .card-stat {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .card-stat strong {
+      color: var(--accent);
+      font-size: 0.95rem;
+      display: block;
+    }
+
+    /* FEATURED card — spans 2 columns */
+    .card.featured {
+      grid-column: span 2;
+    }
+
+    .card.featured .card-img-wrap { aspect-ratio: 21/9; }
+
+    .card.featured .card-name { font-size: 1.75rem; }
+
+    /* HIDDEN via filter */
+    .card.hidden { display: none; }
+
+    /* LIGHTBOX */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .lightbox.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .lightbox-inner {
+      max-width: 900px;
+      width: 92vw;
+      position: relative;
+    }
+
+    .lightbox img {
+      width: 100%;
+      max-height: 65vh;
+      object-fit: cover;
+      display: block;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: -3rem;
+      right: 0;
+      background: none;
+      border: none;
+      color: var(--white);
+      font-size: 1.8rem;
+      cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lightbox-info {
+      padding: 1.5rem;
+      background: var(--gray);
+    }
+
+    .lightbox-make { font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase; color: var(--red); font-family: 'Barlow Condensed', sans-serif; }
+    .lightbox-name { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 2px; }
+    .lightbox-desc { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.7; }
+
+    /* FOOTER */
+    footer {
+      background: #050505;
+      border-top: 1px solid #1a1a1a;
+      padding: 3rem;
+      text-align: center;
+    }
+
+    footer .logo { font-size: 1.5rem; display: block; margin-bottom: 1rem; }
+
+    footer p {
+      font-size: 0.8rem;
+      color: var(--gray-light);
+      letter-spacing: 1px;
+    }
+
+    /* NO RESULTS */
+    .no-results {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 4rem;
+      color: var(--text-muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: none;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 0 1.5rem 3.5rem; }
+      .filter-bar { padding: 0 1rem; overflow-x: auto; }
+      .gallery-section { padding: 2.5rem 1.5rem; }
+      .card.featured { grid-column: span 1; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="#">VELO<span>X</span></a>
+    <ul class="nav-links">
+      <li><a href="#cars" class="active">Cars</a></li>
+      <li><a href="#boats">Boats</a></li>
+      <li><a href="#motorcycles">Motorcycles</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-tag">The World's Finest Machines</p>
+      <h1 class="hero-title">BUILT<br>TO <em>MOVE</em></h1>
+      <p class="hero-subtitle">Discover iconic cars, powerful speedboats, and legendary motorcycles — the finest machines ever made, in one place.</p>
+      <a href="#gallery" class="hero-cta">
+        Explore Gallery
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar" id="gallery">
+    <button class="filter-btn active" data-filter="all">All <span class="count" id="count-all">18</span></button>
+    <button class="filter-btn" data-filter="car">Cars <span class="count" id="count-car">6</span></button>
+    <button class="filter-btn" data-filter="boat">Boats <span class="count" id="count-boat">6</span></button>
+    <button class="filter-btn" data-filter="motorcycle">Motorcycles <span class="count" id="count-motorcycle">6</span></button>
+  </div>
+
+  <!-- GALLERY -->
+  <section class="gallery-section">
+    <div class="section-header">
+      <div>
+        <p class="section-label">Collection</p>
+        <h2 class="section-title">ALL VEHICLES</h2>
+      </div>
+      <span class="section-count" id="visible-count">18 machines</span>
+    </div>
+
+    <div class="grid" id="grid">
+
+      <!-- ========== CARS ========== -->
+      <div class="card featured" data-cat="car"
+           data-make="Ferrari" data-name="SF90 Stradale"
+           data-desc="A 1,000hp hybrid hypercar with three electric motors and a twin-turbo V8. Ferrari's most powerful road car ever, capable of 0–100 km/h in just 2.5 seconds."
+           data-img="https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1200&q=80"
+           data-stat1="1,000 hp" data-stat2="2.5 s to 100">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1200&q=80" alt="Ferrari SF90 Stradale" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Car</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Ferrari</p>
+          <h3 class="card-name">SF90 Stradale</h3>
+          <p class="card-desc">Hybrid hypercar with 1,000 hp. Three electric motors, twin-turbo V8, 0–100 in 2.5 s.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>1,000 hp</strong></div>
+          <div class="card-stat">0–100<strong>2.5 s</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="car"
+           data-make="Lamborghini" data-name="Huracán EVO"
+           data-desc="The Huracán EVO RWD brings pure rear-wheel-drive thrill to Lamborghini's iconic mid-engine V10 platform. Naturally aspirated 5.2-litre engine screaming to 8,000 rpm."
+           data-img="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=900&q=80"
+           data-stat1="610 hp" data-stat2="3.3 s to 100">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=900&q=80" alt="Lamborghini Huracán" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Car</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Lamborghini</p>
+          <h3 class="card-name">Huracán EVO</h3>
+          <p class="card-desc">610 hp naturally aspirated V10. Pure, unfiltered Italian drama.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>610 hp</strong></div>
+          <div class="card-stat">0–100<strong>3.3 s</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="car"
+           data-make="Porsche" data-name="911 GT3 RS"
+           data-desc="The ultimate track-focused 911 with a naturally aspirated 4.0L flat-six and a body full of active aerodynamics. 525 hp of pure motorsport DNA."
+           data-img="https://images.unsplash.com/photo-1611651338412-8403fa6e3599?w=900&q=80"
+           data-stat1="525 hp" data-stat2="3.2 s to 100">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1611651338412-8403fa6e3599?w=900&q=80" alt="Porsche 911 GT3 RS" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Car</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Porsche</p>
+          <h3 class="card-name">911 GT3 RS</h3>
+          <p class="card-desc">Track weapon with motorsport DNA and an ear-splitting flat-six.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>525 hp</strong></div>
+          <div class="card-stat">0–100<strong>3.2 s</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="car"
+           data-make="Bugatti" data-name="Chiron Super Sport"
+           data-desc="The Bugatti Chiron Super Sport raises the hypercar bar with a quad-turbocharged 8.0L W16 engine producing 1,578 hp. Top speed electronically limited to 440 km/h."
+           data-img="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=900&q=80"
+           data-stat1="1,578 hp" data-stat2="2.4 s to 100">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=900&q=80" alt="Bugatti Chiron" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Car</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Bugatti</p>
+          <h3 class="card-name">Chiron Super Sport</h3>
+          <p class="card-desc">Quad-turbo W16. The pinnacle of automotive engineering.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>1,578 hp</strong></div>
+          <div class="card-stat">0–100<strong>2.4 s</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="car"
+           data-make="McLaren" data-name="720S"
+           data-desc="The McLaren 720S is a mid-engine supercar with a 4.0L twin-turbo V8 producing 710 hp. Dihedral doors, carbon monocoque, and mind-bending aerodynamics."
+           data-img="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=900&q=80"
+           data-stat1="710 hp" data-stat2="2.9 s to 100">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=900&q=80" alt="McLaren 720S" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Car</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">McLaren</p>
+          <h3 class="card-name">720S</h3>
+          <p class="card-desc">Twin-turbo V8, carbon monocoque, dihedral doors. Pure British intensity.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>710 hp</strong></div>
+          <div class="card-stat">0–100<strong>2.9 s</strong></div>
+        </div>
+      </div>
+
+      <!-- ========== BOATS ========== -->
+      <div class="card featured" data-cat="boat"
+           data-make="Riva" data-name="Rivamare"
+           data-desc="The Riva Rivamare is a 38-foot open yacht that blends Italian craftsmanship with modern performance. Teak decks, carbon details, and twin Volvo Penta engines delivering 900 hp total."
+           data-img="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1200&q=80"
+           data-stat1="900 hp" data-stat2="38 ft LOA">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=1200&q=80" alt="Riva Rivamare" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Boat</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Riva</p>
+          <h3 class="card-name">Rivamare</h3>
+          <p class="card-desc">Italian craftsmanship meets open-water performance on this iconic 38-ft yacht.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Total Power<strong>900 hp</strong></div>
+          <div class="card-stat">Length<strong>38 ft</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="boat"
+           data-make="Cigarette" data-name="515 Project ONE"
+           data-desc="Developed in partnership with Mercedes-AMG, the Cigarette 515 Project ONE mirrors the AMG Project ONE hypercar. 2,200 hp from six Mercury Racing outboard engines."
+           data-img="https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=900&q=80"
+           data-stat1="2,200 hp" data-stat2="6 engines">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=900&q=80" alt="Cigarette racing boat" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Boat</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Cigarette Racing</p>
+          <h3 class="card-name">515 Project ONE</h3>
+          <p class="card-desc">AMG-inspired offshore powerboat with 2,200 hp of outboard fury.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>2,200 hp</strong></div>
+          <div class="card-stat">Engines<strong>6 outboard</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="boat"
+           data-make="Sunseeker" data-name="Predator 130"
+           data-desc="The Sunseeker Predator 130 is a statement superyacht reaching 43 metres in length with four decks, a beam of 7.7 m and twin MTU 16V 2000 engines."
+           data-img="https://images.unsplash.com/photo-1577032229840-33197764440d?w=900&q=80"
+           data-stat1="43 m LOA" data-stat2="4 decks">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1577032229840-33197764440d?w=900&q=80" alt="Sunseeker superyacht" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Boat</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Sunseeker</p>
+          <h3 class="card-name">Predator 130</h3>
+          <p class="card-desc">43-metre superyacht with four decks and twin MTU powerplants.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Length<strong>43 m</strong></div>
+          <div class="card-stat">Decks<strong>4</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="boat"
+           data-make="Pershing" data-name="GTX116"
+           data-desc="The Pershing GTX116 pushes superyacht design forward with a futuristic hull design, beach club stern, and twin MAN diesel engines producing a combined 3,000 hp."
+           data-img="https://images.unsplash.com/photo-1563906267088-b029e7101114?w=900&q=80"
+           data-stat1="3,000 hp" data-stat2="35 m LOA">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1563906267088-b029e7101114?w=900&q=80" alt="Pershing GTX116" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Boat</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Pershing</p>
+          <h3 class="card-name">GTX116</h3>
+          <p class="card-desc">Italian superyacht excellence with 3,000 hp twin MAN diesels.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>3,000 hp</strong></div>
+          <div class="card-stat">Length<strong>35 m</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="boat"
+           data-make="Wally" data-name="Wallypower58"
+           data-desc="The Wallypower58 is an ultra-minimalist performance powerboat inspired by stealth aircraft aesthetics. Triple Volvo Penta IPS drives and a carbon fibre hull make this a design icon."
+           data-img="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=900&q=80"
+           data-stat1="Triple IPS" data-stat2="58 ft LOA">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=900&q=80" alt="Wally powerboat" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Boat</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Wally</p>
+          <h3 class="card-name">Wallypower58</h3>
+          <p class="card-desc">Stealth-inspired carbon hull. Minimalism taken to the extreme on open water.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Drives<strong>Triple IPS</strong></div>
+          <div class="card-stat">Length<strong>58 ft</strong></div>
+        </div>
+      </div>
+
+      <!-- ========== MOTORCYCLES ========== -->
+      <div class="card featured" data-cat="motorcycle"
+           data-make="Ducati" data-name="Panigale V4 R"
+           data-desc="The Ducati Panigale V4 R is the closest thing to a MotoGP bike that you can ride on public roads. A 1,103cc Desmosedici Stradale R engine at 16,500 rpm produces 228 hp."
+           data-img="https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=1200&q=80"
+           data-stat1="228 hp" data-stat2="16,500 rpm">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=1200&q=80" alt="Ducati Panigale V4 R" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Motorcycle</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Ducati</p>
+          <h3 class="card-name">Panigale V4 R</h3>
+          <p class="card-desc">Street-legal MotoGP weapon. 228 hp, Desmosedici-derived V4 at 16,500 rpm.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>228 hp</strong></div>
+          <div class="card-stat">Rev Limit<strong>16,500 rpm</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="motorcycle"
+           data-make="BMW" data-name="S 1000 RR"
+           data-desc="BMW's flagship superbike with 210 hp from its inline-four, ShiftCam variable intake timing, and a race-spec suspension package. Dominant in the Superbike World Championship."
+           data-img="https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=900&q=80"
+           data-stat1="210 hp" data-stat2="13,500 rpm">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=900&q=80" alt="BMW S1000RR" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Motorcycle</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">BMW</p>
+          <h3 class="card-name">S 1000 RR</h3>
+          <p class="card-desc">210 hp inline-four with ShiftCam variable timing. German precision at its finest.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>210 hp</strong></div>
+          <div class="card-stat">Rev Limit<strong>13,500 rpm</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="motorcycle"
+           data-make="Kawasaki" data-name="Ninja H2 R"
+           data-desc="The track-only Kawasaki Ninja H2 R is one of the most extreme motorcycles ever made. Its supercharged 998cc inline-four produces 310 hp and can hit 400 km/h."
+           data-img="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=900&q=80"
+           data-stat1="310 hp" data-stat2="Supercharged">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=900&q=80" alt="Kawasaki Ninja H2R" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Motorcycle</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Kawasaki</p>
+          <h3 class="card-name">Ninja H2 R</h3>
+          <p class="card-desc">Supercharged 310 hp. The most extreme production motorcycle ever built.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>310 hp</strong></div>
+          <div class="card-stat">Induction<strong>Supercharged</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="motorcycle"
+           data-make="Harley-Davidson" data-name="CVO Road Glide"
+           data-desc="The flagship touring Harley with a 117ci Milwaukee-Eight engine, premium audio, and heated seats. Built for cross-continent domination in absolute comfort."
+           data-img="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80"
+           data-stat1="117 ci V-Twin" data-stat2="Touring">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80" alt="Harley-Davidson CVO" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Motorcycle</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">Harley-Davidson</p>
+          <h3 class="card-name">CVO Road Glide</h3>
+          <p class="card-desc">117ci Milwaukee-Eight. The king of American long-haul touring.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Engine<strong>117 ci V-Twin</strong></div>
+          <div class="card-stat">Type<strong>Touring</strong></div>
+        </div>
+      </div>
+
+      <div class="card" data-cat="motorcycle"
+           data-make="MV Agusta" data-name="F4 RC"
+           data-desc="The MV Agusta F4 RC is an exclusive Italian masterpiece. Just 250 units were built, each with a 998cc inline-four producing 212 hp and hand-assembled at the Schiranna factory."
+           data-img="https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=900&q=80"
+           data-stat1="212 hp" data-stat2="250 units only">
+        <div class="card-img-wrap">
+          <img class="card-img" src="https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=900&q=80" alt="MV Agusta F4 RC" loading="lazy"/>
+          <div class="card-overlay"></div>
+          <span class="card-cat-badge">Motorcycle</span>
+        </div>
+        <div class="card-body">
+          <p class="card-make">MV Agusta</p>
+          <h3 class="card-name">F4 RC</h3>
+          <p class="card-desc">Only 250 built. Hand-assembled Italian art with 212 hp inline-four.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-stat">Power<strong>212 hp</strong></div>
+          <div class="card-stat">Production<strong>250 units</strong></div>
+        </div>
+      </div>
+
+      <div class="no-results" id="no-results">No vehicles found</div>
+    </div>
+  </section>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-inner">
+      <button class="lightbox-close" id="lb-close">✕ CLOSE</button>
+      <img id="lb-img" src="" alt="" />
+      <div class="lightbox-info">
+        <p class="lightbox-make" id="lb-make"></p>
+        <h2 class="lightbox-name" id="lb-name"></h2>
+        <p class="lightbox-desc" id="lb-desc"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <a class="logo" href="#">VELO<span style="color:var(--red)">X</span></a>
+    <p>A curated gallery of the world's finest machines — Cars · Boats · Motorcycles</p>
+  </footer>
+
+  <script>
+    // Filter logic
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.card');
+    const sectionTitle = document.querySelector('.section-title');
+    const visibleCount = document.getElementById('visible-count');
+    const noResults = document.getElementById('no-results');
+    const titleMap = { all: 'ALL VEHICLES', car: 'CARS', boat: 'BOATS', motorcycle: 'MOTORCYCLES' };
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        let visible = 0;
+        cards.forEach(card => {
+          const match = filter === 'all' || card.dataset.cat === filter;
+          card.classList.toggle('hidden', !match);
+          if (match) visible++;
+        });
+        sectionTitle.textContent = titleMap[filter];
+        visibleCount.textContent = `${visible} machine${visible !== 1 ? 's' : ''}`;
+        noResults.style.display = visible === 0 ? 'block' : 'none';
+      });
+    });
+
+    // Lightbox
+    const lightbox = document.getElementById('lightbox');
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        document.getElementById('lb-img').src = card.dataset.img;
+        document.getElementById('lb-img').alt = card.dataset.name;
+        document.getElementById('lb-make').textContent = card.dataset.make;
+        document.getElementById('lb-name').textContent = card.dataset.name;
+        document.getElementById('lb-desc').textContent = card.dataset.desc;
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    document.getElementById('lb-close').addEventListener('click', closeLb);
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLb(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+    function closeLb() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Active nav on scroll
+    const sections = { cars: document.querySelector('[data-cat="car"]'), boats: document.querySelector('[data-cat="boat"]'), motorcycles: document.querySelector('[data-cat="motorcycle"]') };
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      navLinks.forEach(l => l.classList.remove('active'));
+    });
+  </script>
+</body>
+</html>
